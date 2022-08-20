@@ -196,6 +196,8 @@ _print_c:
 	int 0x10
 	jmp .string
 .done:
+	;cmp byte [si-2],';'
+	;je comment
 	mov ax,0x0e0a
 	int 0x10
 	mov ax,0x0e0d
@@ -760,7 +762,7 @@ table:
 
 bnerr: db "?Number too big error",13,10,0
 inmrk: db "? ",0
-nomem: db "Memory error!",13,10,0
+nomem: db "?Memory error",13,10,0
 ctrlc: db "^C",13,10,0
 error: db "?Syntax error"
 endln: db 13,10,0
