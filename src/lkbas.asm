@@ -276,7 +276,8 @@ variable:
 	je syntaxerror	
 	mov bx,dx
 	add bx,VAR_OFFSET
-	jo memoryerror
+	cmp bx,VAR_OFFSET
+	jg memoryerror
 	mov dx,[bx]
 	ret
 
@@ -290,7 +291,8 @@ variable_byte:
 	je syntaxerror	
 	mov bx,dx
 	add bx,VAR_OFFSET
-	jo memoryerror
+	cmp bx,VAR_OFFSET
+	jg memoryerror
 	mov dl, byte [bx]
 	xor bh,bh
 	ret
@@ -393,7 +395,8 @@ _ptr:
 	call calc
 	mov bx,[temp0]
 	add bx,VAR_OFFSET
-	jo memoryerror
+	cmp bx,VAR_OFFSET
+	jg memoryerror
 	mov [bx],dx
 	ret
 
@@ -494,7 +497,8 @@ rnd:
 	jl .loop0
 	mov bx,[temp0]
 	add bx,VAR_OFFSET
-	jo memoryerror
+	cmp bx,VAR_OFFSET
+	jg memoryerror
 	mov [bx],dx
 comment:
 	ret
@@ -512,7 +516,8 @@ _inc:
 	jne syntaxerror
 	mov bx,dx
 	add bx,VAR_OFFSET
-	jo memoryerror
+	cmp bx,VAR_OFFSET
+	jg memoryerror
 	inc word [bx]
 	ret
 _decw:
@@ -528,7 +533,8 @@ _dec:
 	jne syntaxerror
 	mov bx,dx
 	add bx,VAR_OFFSET
-	jo memoryerror
+	cmp bx,VAR_OFFSET
+	jg memoryerror
 	dec word [bx]
 	ret
 
@@ -723,7 +729,8 @@ input:
 	cmp ax,si
 	mov bx,[temp0]
 	add bx,VAR_OFFSET
-	jo memoryerror
+	cmp bx,VAR_OFFSET
+	jg memoryerror
 	mov [bx],dx
 	ret
 
@@ -741,7 +748,8 @@ getch:
 	int 0x16
 	mov bx,[temp0]
 	add bx,VAR_OFFSET
-	jo numbertoobigerror
+	cmp bx,VAR_OFFSET
+	jg memoryerror
 	mov [bx],ax
 	ret
 
@@ -756,13 +764,15 @@ getchasync:
 	jnz .nokey
 	mov bx,[temp0]
 	add bx,VAR_OFFSET
-	jo numbertoobigerror
+	cmp bx,VAR_OFFSET
+	jg memoryerror
 	mov [bx],ax
 	ret
 .nokey:
 	mov bx,[temp0]
 	add bx,VAR_OFFSET
-	jo numbertoobigerror
+	cmp bx,VAR_OFFSET
+	jg memoryerror
 	mov word [bx],0xFFFF
 	ret
 
