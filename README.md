@@ -10,7 +10,7 @@ LK-BASIC can interpret statements just after you press enter, or save statements
 10 PRINT "Hello World!"
 20 STOP
 ```
-It is good to use numbers dividable by 10, if you do that you can insert lines between 10 and 20 without rewritting entire program. Statements are saved in `[line_number*LINE_SIZE+CODE_START]`, where LINE_SIZE is 40 and CODE_START is 0x2000.
+It is good to use numbers divisible by 10, if you do that you can insert lines between 10 and 20 without rewritting entire program. Statements are saved in `[line_number*LINE_SIZE+CODE_START]`, where LINE_SIZE is 40 and CODE_START is 0x2000.
 ### Statements
 LK-BASIC supports 18 (plus 3 synonyms and 1 not working) statements ( [] is optional parameter, <> is required parameter):
 - `PRINT ["string"] [,] [variable [+|-|*] ] [;]` - prints text on screen, for example `PRINT "Hello World! Content of 0=",$0`.
