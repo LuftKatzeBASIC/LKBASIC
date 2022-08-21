@@ -3,7 +3,7 @@
 ### Variables
 LK-BASIC does NOT give you any way to declare variables. Instead, it gives you memory from VAR_OFFSET (0xB000) to 0xFFFF. To access this memory you use `$`. $xx returns word (2 bytes, 0 to 65535 (FFFF hex)) from xx+VAR_OFFSET. If xx+VAR_OFFSET is bigger than 0xFFFF program returns memory error. To set variable's value you use `VAR` or `PTR`(PTR == VAR) keywords, eg. `VAR 0=12`, that translates to C's `*(0+VAR_OFFSET)=12`. `VAR $0=12` coresponds to C's `*(*(0+VAR_OFFSET))=12`.
 ### Program lines
-LK-BASIC can interpret statements just after you press enter, OR saves statements to memory. To save statement to memory just type line number before statement, for example:
+LK-BASIC can interpret statements just after you press enter, or save statements to memory. To save statement to memory just type line number before statement, for example:
 ```
 10 PRINT "Hello World!"
 20 STOP
