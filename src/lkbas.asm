@@ -10,18 +10,12 @@ GOSUB_SPSP equ 0x2000
 mov ax,0x03
 int 0x10
 
-mov ax,0x0500
-int 0x20
 
 xor bx,bx
 mov ds,bx
 mov es,bx
 mov ss,bx
 
-cli
-mov word [0x1b*4],ctrlc
-mov word [0x1b*4+2],cs
-sti
 
 mov sp,0xFE00
 mov si,intro
@@ -102,14 +96,14 @@ readln:
 	int 0x16
 	cmp al,0x08
 	je .back
-		cmp ah,0x0e
-		je .back
+	cmp ah,0x0e
+	je .back
 	cmp al,0x0d
 	je .enter
 	mov ah,0x0e
 	int 0x10
 	mov [si],al
-		inc si
+	inc si
 	inc cx
 	jmp .m
 .back:
@@ -180,8 +174,6 @@ _print_c:
 	cmp al,','
 	je .print
 	dec si
-	mov ax,0x0e20
-	int 0x10
 	call calc
 	call outnumb
 	jmp .print
@@ -196,8 +188,8 @@ _print_c:
 	int 0x10
 	jmp .string
 .done:
-	;cmp byte [si-2],';'
-	;je comment
+	cmp byte [si-2],';'
+	je comment
 	mov ax,0x0e0a
 	int 0x10
 	mov ax,0x0e0d
@@ -221,7 +213,7 @@ _print_c:
 
 calc:
 	call getnumb
-	mov [.temp0],dx
+	mov [temp0],dx
 .loop0:
 	lodsb
 	cmp al,0
@@ -238,15 +230,15 @@ calc:
 	je .sub_
 	cmp al,'*'
 	je .mul_
-	jmp syntaxerror
+	jmp comment
 .add_:
 	push si
 	call getnumb
 	pop ax
 	cmp si,ax
 	je syntaxerror
-	add dx,[.temp0]
-	mov [.temp0],dx
+	add dx,[temp0]
+	mov [temp0],dx
 	jmp .loop0
 .sub_:
 	push si
@@ -254,8 +246,8 @@ calc:
 	pop ax
 	cmp si,ax
 	je syntaxerror
-	sub [.temp0],dx
-	mov dx,[.temp0]
+	sub [temp0],dx
+	mov dx,[temp0]
 	jmp .loop0
 .mul_:
 	push si
@@ -263,13 +255,11 @@ calc:
 	pop ax
 	cmp si,ax
 	je syntaxerror
-	mov ax,[.temp0]
+	mov ax,[temp0]
 	mul dx
-	mov [.temp0],ax
+	mov [temp0],ax
 	mov dx,ax
 	jmp .loop0
-
-.temp0: dw 0x00
 
 
 variable:
@@ -374,58 +364,18 @@ var:
 	pop ax
 	cmp ax,si
 	je syntaxerror
-	mov [.loc],dx
+	mov [temp0],dx
 	call ts
 	lodsb
 	cmp al,'='
 	jne syntaxerror
 	call ts
 	call calc
-	mov bx,[.loc]
+	mov bx,[temp0]
 	add bx,VAR_OFFSET
 	jo memoryerror
 	mov [bx],dx
 	ret
-.loc: dw 0x0000
-ishrt:
-	sub si,0x03
-input:
-	add si,0x05
-	call ts
-	push si
-	call getnumb
-	pop ax
-	cmp ax,si
-	je syntaxerror
-	lodsb
-	cmp al,';'
-	jne .n0
-	mov ah,';'
-	lodsb
-.n0:
-	cmp al,0
-	jne syntaxerror
-	mov [.loc],dx
-	cmp ah,';'
-	je .n1
-	mov si,inmrk
-	call __print
-.n1:
-	mov si,cmd
-	call readln
-	mov si,cmd
-	call ts
-	push si
-	call getnumb
-	pop ax
-	cmp ax,si
-	mov bx,[.loc]
-	add bx,VAR_OFFSET
-	jo memoryerror
-	mov [bx],dx
-	ret
-
-.loc: dw 0x0000
 
 if:
 	add si,0x02
@@ -434,7 +384,7 @@ if:
 	call getnumb
 	pop ax
 	cmp ax,si
-	mov [.first],dx
+	mov [temp0],dx
 	call ts
 	cmp word [si],0x3d3d ; ==
 	je .cmpequ
@@ -452,7 +402,7 @@ if:
 	call getnumb
 	pop ax
 	cmp ax,si
-	mov ax,[.first]
+	mov ax,[temp0]
 	cmp dx,ax
 	jg comment
 	call ts
@@ -464,7 +414,7 @@ if:
 	call getnumb
 	pop ax
 	cmp ax,si
-	mov ax,[.first]
+	mov ax,[temp0]
 	cmp dx,ax
 	jl comment
 	call ts
@@ -476,7 +426,7 @@ if:
 	call getnumb
 	pop ax
 	cmp ax,si
-	mov ax,[.first]
+	mov ax,[temp0]
 	cmp dx,ax
 	jne comment
 	call ts
@@ -489,13 +439,12 @@ if:
 	call getnumb
 	pop ax
 	cmp ax,si
-	mov ax,[.first]
+	mov ax,[temp0]
 	cmp dx,ax
 	je comment
 	call ts
 	jmp exec
 
-.first: dw 0x00
 
 rnd:
 	add si,4
@@ -567,14 +516,14 @@ list:
 	pop ax
 	cmp ax,si
 	je syntaxerror
-	mov [.d],dx
+	mov [temp0],dx
 	mov ax,LINE_SIZE
 	mul dx
 	add ax,CODE_START
 	mov di,ax
 	cmp byte [di],0
 	je _start
-	mov dx,[.d]
+	mov dx,[temp0]
 	call outnumb
 	mov ax,0x0e20
 	int 0x10
@@ -610,8 +559,6 @@ list:
 .next:
 	add di,LINE_SIZE
 	jmp .loop0
-
-.d: dw 0x0000
 
 goto:
 	add si,0x05
@@ -652,12 +599,12 @@ gosub:
 	cmp ax,si
 	je syntaxerror
 
-	mov [.oldsp],sp
+	mov [temp0],sp
 	mov bx,[subsp]
 	mov sp,[bx]
 	push word [nxtip]
 	mov [bx],sp
-	mov sp,[.oldsp]
+	mov sp,[temp0]
 
 	mov ax,LINE_SIZE
 	mul dx
@@ -665,53 +612,84 @@ gosub:
 	mov [nxtip],ax
 	ret
 
-.oldsp: dw 0x0000
-
 return:
-	mov [gosub.oldsp],sp
+	mov [temp0],sp
 	mov bx,[subsp]
 	mov sp,[bx]
 	pop word [nxtip]
 	mov [bx],sp
-	mov sp,[gosub.oldsp]
+	mov sp,[temp0]
 	ret
 
 xy:
 	add si,0x02
 	call ts
-	push si
 	call getnumb
-	pop ax
-	cmp ax,si
-	je syntaxerror
 	cmp dx,79
 	jg syntaxerror
-	mov [.x],dl
+	mov [temp0],dl
 	call ts
 	cmp byte [si],','
 	jne syntaxerror
 	inc si
 	call ts
-	push si
 	call getnumb
-	pop ax
-	cmp ax,si
-	je syntaxerror
 	cmp dx,24
 	jg syntaxerror
 	mov ah,0x02
 	xor bh,bh
 	mov dh,dl
-	mov dl,[.x]
+	mov dl,[temp0]
 	int 0x10
 	ret
 
-.x: db 0x00
+
+ishrt:
+	sub si,0x03
+input:
+	add si,0x05
+	call ts
+	push si
+	call getnumb
+	pop ax
+	cmp ax,si
+	je syntaxerror
+	lodsb
+	cmp al,';'
+	jne .n0
+	mov ah,';'
+	lodsb
+.n0:
+	cmp al,0
+	jne syntaxerror
+	mov [temp0],dx
+	cmp ah,';'
+	je .n1
+	mov si,inmrk
+	call __print
+.n1:
+	mov si,cmd
+	call readln
+	mov si,cmd
+	call ts
+	push si
+	call getnumb
+	pop ax
+	cmp ax,si
+	mov bx,[temp0]
+	add bx,VAR_OFFSET
+	jo memoryerror
+	mov [bx],dx
+	ret
 
 numbertoobigerror:
 	mov si,bnerr
 	call __print
 	jmp _start
+
+save:
+load:
+	ret
 
 table:
 	db 6,"PRINT "
@@ -758,16 +736,21 @@ table:
 	dw pshrt
 	db 2,"IN"
 	dw ishrt
+	db 5,"SAVE "
+	dw save
+	db 4,"LOAD "
+	dw load
 	db 0
 
 bnerr: db "?Number too big error",13,10,0
-inmrk: db "? ",0
 nomem: db "?Memory error",13,10,0
-ctrlc: db "^C",13,10,0
 error: db "?Syntax error"
 endln: db 13,10,0
-intro: db 13,10," Luftkatze's Standalone BASIC v1.15 | 3",13,10," 2022, Luftkatze   github.com/LuftkatzeBASIC",13,10,10,0
+inmrk: db "? ",0
+ctrlc: db "^C",13,10,0
+intro: db 13,10," Luftkatze's Standalone BASIC v1.15",13,10,10,0
 nxtip: dw CODE_START
 subsp: dw GOSUB_SPSP
+temp0: dw 0x0000
 times (2048-($-$$)) db 0
 cmd equ $
