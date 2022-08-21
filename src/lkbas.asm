@@ -620,6 +620,7 @@ goto:
 
 continue:
 	mov si,[nxtip]
+	jmp run.loop0
 	ret
 
 run:
