@@ -27,8 +27,8 @@ LK-BASIC supports 18 (plus 3 synonyms and 1 not working) statements ( [] is opti
 - `NEW` - deletes program.
 - `LIST [line number]` - lists program lines.
 - `GOTO <line number>` - sets next line pointer to `line number`, for example `GOTO 10` will go to 10th line of your code.
-- `BACK` - return to executing program after `STOP` statement.
-- `RUN` - run your program from line `0` until it reaches MAX_CODEOF or `STOP` instruction.
+- `BACK` - returns to executing program after `STOP` statement.
+- `RUN` - runs your program from line `1` until it reaches MAX_CODEOF or `STOP` instruction.
 - `GOSUB <line number>` - same as GOTO, but saves next line number and is able to return to it using...
 - `RETURN` - returns to last `GOSUB` statement.
 - `XY <x>,<y>` - sets cursor position to x,y (x can be 0 to 79 and y 0 to 24 (80x25 screen)).
