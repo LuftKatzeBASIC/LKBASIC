@@ -18,7 +18,7 @@ LK-BASIC supports 18 (plus 3 synonyms and 1 not working) statements ( [] is opti
 - `VAR <address> = <value>` - set `[number+VAR_OFFSET]` to value, for example `VAR 5=123`.
 - `INPUT <address>[;]` - set `[address]` to user input (only number), for example `INPUT 12`. Without `;` it prints `? ` before input.
 - `STOP` - Stop program.
-- `IF <number> < == | != | \\< | \\> > <number> STATEMENT` - does `STATEMENT` if condition is true, for example `IF $0==12 GOTO 10`.
+- `IF <number> < == | != | \< | \> > <number> STATEMENT` - does `STATEMENT` if condition is true, for example `IF $0==12 GOTO 10`.
 - `RND <address>,<number>` - returns pseudo-random number in range 0-`number` in `[address]`.
 - `++<address>` - adds one to `[address]`, for example `++0`.
 - `--<address>` - subtracts one from `[address]`, for example `--0`.
