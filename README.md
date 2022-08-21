@@ -13,11 +13,11 @@ LK-BASIC can interpret statements just after you press enter, or save statements
 It is good to use numbers dividable by 10, if you do that you can insert lines between 10 and 20 without rewritting entire program. Statements are saved in `[line_number*LINE_SIZE+CODE_START]`, where LINE_SIZE is 40 and CODE_START is 0x2000.
 ### Statements
 LK-BASIC supports 18 (plus 3 synonyms and 1 not working) statements ( [] is optional parameter, <> is required parameter):
-- `PRINT ["string"] [,] [variable [+|-|*] ] [;]`, for example `PRINT "Hello World! Content of 0=",$0`.
+- `PRINT ["string"] [,] [variable [+|-|*] ] [;]` - prints text on screen, for example `PRINT "Hello World! Content of 0=",$0`.
 - `REM [comment]` - comment.
-- `VAR <address> = <value>` - set `[number+VAR_OFFSET]` to value, for example `VAR 5=123`.
-- `INPUT <address>[;]` - set `[address]` to user input (only number), for example `INPUT 12`. Without `;` it prints `? ` before input.
-- `STOP` - Stop program.
+- `VAR <address> = <value>` - sets `[number+VAR_OFFSET]` to value, for example `VAR 5=123`.
+- `INPUT <address>[;]` - sets `[address]` to user input (only number), for example `INPUT 12`. Without `;` it prints `? ` before input.
+- `STOP` - Stops program.
 - `IF <number> < == | != | \< | \> > <number> STATEMENT` - does `STATEMENT` if condition is true, for example `IF $0==12 GOTO 10`.
 - `RND <address>,<number>` - returns pseudo-random number in range 0-`number` in `[address]`.
 - `++<address>` - adds one to `[address]`, for example `++0`.
