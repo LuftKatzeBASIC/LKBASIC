@@ -32,14 +32,17 @@ mov si,CODE_START
 	jmp .m
 
 _start:
+	mov si,ready
+	call __print
+.main:
 	mov ax,0x0e3e
 	int 0x10
 	mov si,cmd
 	call readln
 	mov si,cmd
 	cmp byte [si],0x00
-	je _start
-	call getnumb
+	je .main
+	call getnumbsafe
 	cmp dx,0x00
 	je .iti
 .done0:
@@ -51,10 +54,10 @@ _start:
 	mov cx,LINE_SIZE
 	rep movsb
 	mov di,cmd
-	jmp _start
+	jmp .main
 .iti:
 	call exec
-	jmp _start
+	jmp .main
 
 clr:
 	mov di,CODE_START
@@ -65,13 +68,21 @@ clr:
  	jne .main
  	ret
 
+getnumbsafe:
+	xor bx,bx
+	xor ch,ch
+	push bx
+	jmp getnumb.loop0
 getnumb:
+	push si
 	xor bx,bx
 	xor ch,ch
 .loop0:
 	lodsb
 	cmp al,'$'
 	je variable
+	cmp al,'#'
+	je variable_byte
 	cmp al,'0'
 	jl .done
 	cmp al,'9'
@@ -85,6 +96,9 @@ getnumb:
 	jmp .loop0
 .done:
 	dec si
+	pop ax
+	cmp si,ax
+	je syntaxerror
 	mov dx,bx
 	ret
 
@@ -128,8 +142,12 @@ readln:
 
 
 outnumb:
+	xor bx,bx
 	mov ax,dx
 .main:
+	inc bx
+	cmp bx,0x06
+	je comment
 	xor dx,dx
 	mov cx,10
 	div cx
@@ -139,10 +157,12 @@ outnumb:
 	call .main
 .c:
 	pop ax
+	push bx
 	add al,'0'
 	push ax
 	mov ah,0x0e
 	int 0x10
+	pop bx
 	pop ax
 	ret
 
@@ -169,8 +189,6 @@ _print_c:
 	je .done
 	cmp al,';'
 	je .print
-	cmp al,'c'
-	je .char
 	cmp al,','
 	je .print
 	dec si
@@ -195,33 +213,17 @@ _print_c:
 	mov ax,0x0e0d
 	int 0x10
 	ret
-.char:
-	push si
-	call getnumb
-	pop ax
-	cmp ax,si
-	je syntaxerror
-	cmp dx,0xFF
-	jg numbertoobigerror
-	mov al,dl
-	mov ah,0x0e
-	int 0x10
-	lodsb
-	cmp al,','
-	jne syntaxerror
-	jmp .print
-
 calc:
 	call getnumb
 	mov [temp0],dx
 .loop0:
 	lodsb
 	cmp al,0
-	je comment
+	je .done
 	cmp al,','
-	je comment
+	je .done
 	cmp al,'='
-	je comment
+	je .done
 	cmp al,' '
 	je .loop0
 	cmp al,'+'
@@ -230,7 +232,9 @@ calc:
 	je .sub_
 	cmp al,'*'
 	je .mul_
-	jmp comment
+.done:
+	dec si
+	ret
 .add_:
 	push si
 	call getnumb
@@ -275,6 +279,22 @@ variable:
 	jo memoryerror
 	mov dx,[bx]
 	ret
+
+variable_byte:
+	cmp byte [si],'$'
+	je syntaxerror
+	push si
+	call getnumb
+	pop ax
+	cmp si,ax
+	je syntaxerror	
+	mov bx,dx
+	add bx,VAR_OFFSET
+	jo memoryerror
+	mov dl, byte [bx]
+	xor bh,bh
+	ret
+
 
 memoryerror:
 	mov si,nomem
@@ -356,7 +376,7 @@ break:
 	jmp _start
 
 
-var:
+_ptr:
 	add si,0x03
 	call ts
 	push si
@@ -449,14 +469,38 @@ if:
 rnd:
 	add si,4
 	call ts
-	push si
 	call getnumb
-	pop ax
-	cmp ax,si
-	cmp byte [si],0x00
+	mov [temp0],dx
+	call ts
+	cmp byte [si],','
 	jne syntaxerror
+	inc si
+	call ts
+	call getnumb
+	mov [temp1],dx
+	xor ax,ax
+	int 0x1a
+	sub dx,3000
+	add dx,si
+	add dx,sp
+	sub dx,0xF000
+	sub dx,CODE_START
+	sub dx,0x02
+.loop0:
+	sub dx,0x17
+	add dx,si
+	sub dx,CODE_START
+	cmp dx,[temp1]
+	jl .loop0
+	mov bx,[temp0]
+	add bx,VAR_OFFSET
+	jo memoryerror
+	mov [bx],dx
 comment:
 	ret
+
+_incw:
+	inc si
 _inc:
 	add si,0x02
 	call ts
@@ -471,7 +515,8 @@ _inc:
 	jo memoryerror
 	inc word [bx]
 	ret
-
+_decw:
+	inc si
 _dec:
 	add si,0x02
 	call ts
@@ -511,11 +556,10 @@ list:
 	call ts
 	cmp byte [si],0x00
 	je .here
-	push si
+	jmp $
 	call getnumb
-	pop ax
-	cmp ax,si
-	je syntaxerror
+	cmp dx,0x00
+	je .here
 	mov [temp0],dx
 	mov ax,LINE_SIZE
 	mul dx
@@ -687,9 +731,75 @@ numbertoobigerror:
 	call __print
 	jmp _start
 
-save:
-load:
+getch:
+	add si,0x06
+	call ts
+	call getnumb
+	mov [temp0],dx
+	xor ax,ax
+	int 0x16
+	mov bx,[temp0]
+	add bx,VAR_OFFSET
+	jo numbertoobigerror
+	mov [bx],ax
 	ret
+
+getchasync:
+	add si,0x06
+	call ts
+	call getnumb
+	mov [temp0],dx
+	xor ax,ax
+	inc ax
+	int 0x16
+	jnz .nokey
+	mov bx,[temp0]
+	add bx,VAR_OFFSET
+	jo numbertoobigerror
+	mov [bx],ax
+	ret
+.nokey:
+	mov bx,[temp0]
+	add bx,VAR_OFFSET
+	jo numbertoobigerror
+	mov word [bx],0xFFFF
+	ret
+
+putchararr:
+	add si,0x07
+.next
+	call ts
+	call calc
+	cmp dx,0xFF
+	jg numbertoobigerror
+	mov al,dl
+	mov ah,0x0e
+	int 0x10
+	call ts
+	lodsb
+	cmp al,0
+	je comment
+	cmp al,','
+	jne syntaxerror
+	jmp .next
+	ret
+
+poke:
+	add si,0x04
+	call ts
+	call getnumb
+	mov [temp0],dx
+	call ts
+	lodsb
+	cmp al,','
+	jne syntaxerror
+	call ts
+	call calc
+	mov bx,[temp0]
+	mov [bx],dx
+	ret
+
+
 
 table:
 	db 6,"PRINT "
@@ -697,7 +807,7 @@ table:
 	db 4,"REM "
 	dw comment
 	db 4,"VAR "
-	dw var
+	dw _ptr
 	db 6,"INPUT "
 	dw input
 	db 5,"STOP",0
@@ -731,15 +841,23 @@ table:
 	db 3,"XY "
 	dw xy
 	db 4,"PTR "
-	dw var
+	dw _ptr
 	db 2,"? "
 	dw pshrt
 	db 2,"IN"
 	dw ishrt
-	db 5,"SAVE "
-	dw save
-	db 4,"LOAD "
-	dw load
+	db 6,"GETCH "
+	dw getch
+	db 11,"GETCHASYNC "
+	dw getchasync
+	db 7,"PUTARR "
+	dw putchararr
+	db 5,"POKE "
+	dw poke
+	db 4,"INC "
+	dw _incw
+	db 4,"DEC "
+	dw _decw
 	db 0
 
 bnerr: db "?Number too big error",13,10,0
@@ -748,9 +866,12 @@ error: db "?Syntax error"
 endln: db 13,10,0
 inmrk: db "? ",0
 ctrlc: db "^C",13,10,0
-intro: db 13,10," Luftkatze's Standalone BASIC v1.15",13,10,10,0
+intro: db "Luftkatze's Standalone BASIC v1.25",13,10,10,0
+ready: db "READY",13,10,0
 nxtip: dw CODE_START
 subsp: dw GOSUB_SPSP
 temp0: dw 0x0000
+temp1: dw 0x0000
+temp2: dw 0x0000
 times (2048-($-$$)) db 0
 cmd equ $
