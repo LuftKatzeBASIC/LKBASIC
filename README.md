@@ -20,8 +20,8 @@ LK-BASIC supports 18 (plus 3 synonyms and 1 not working) statements ( [] is opti
 - `STOP` - Stops program.
 - `IF <number> < == | != | \< | \> > <number> STATEMENT` - does `STATEMENT` if condition is true, for example `IF $0==12 GOTO 10`.
 - `RND <address>,<number>` - returns pseudo-random number in range 0-`number` in `[address]`.
-- `++<address>` - adds one to `[address]`, for example `++0`.
-- `--<address>` - subtracts one from `[address]`, for example `--0`.
+- `++<address>` - adds one to word at `[address]`, for example `++0`.
+- `--<address>` - subtracts one from word at `[address]`, for example `--0`.
 - `INSTR <address>` - reads line to `address`.
 - `CLS` - clears screen.
 - `NEW` - deletes program.
