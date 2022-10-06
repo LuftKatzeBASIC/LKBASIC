@@ -19,9 +19,7 @@ LK-BASIC supports 18 (plus 3 synonyms and 1 not working) statements ( [] is opti
 - `INPUT <address>[;]` - sets `[address]` to user input (only number), for example `INPUT 12`. Without `;` it prints `? ` before input.
 - `STOP` - Stops program.
 - `IF <number> < == | != | \< | \> > <number> STATEMENT` - does `STATEMENT` if condition is true, for example `IF $0==12 GOTO 10`.
-- `RND <address>,<number>` - returns pseudo-random number in range 0-`number` in `[address]`.
-- `++<address>` - adds one to word at `[address]`, for example `++0`.
-- `--<address>` - subtracts one from word at `[address]`, for example `--0`.
+- `RND <address>` - returns pseudo-random number in `[address]`.
 - `INSTR <address>` - reads line to `address`.
 - `CLS` - clears screen.
 - `NEW` - deletes program.
@@ -35,18 +33,17 @@ LK-BASIC supports 18 (plus 3 synonyms and 1 not working) statements ( [] is opti
 - `PTR <address> = <value>` - see: `VAR`.
 - `? ["string"] [,] [variable [+|-|*] ] [;]` - see: `PRINT`.
 - `IN <address>[;]` - see: `INPUT`.
-- `GETCH <address>` - gets character from keyboard buffer and saves in <address> (high = ASCII low = BIOS scancode), for example `GETCH 0`.
+- `GETCH <address>` - gets character from keyboard buffer and saves in `<address>` (high = ASCII), for example `GETCH 0`.
 - `GETCHASYNC <address>` - same as above but without waiting for keystroke (if buffer is empty returns 65535), for example `GETCHASYNC 0`.
 - `PUTARR <number [number [,] ...] >` - puts char array on screen, for example `PUTARR 65,66,67,13,10`.
 - `POKE <address>,<value>` - sets `[address]` to `value`, for example `POKE 1025,0`.
-- `INC <address>` - see: `++`.
-- `DEC <address>` - see: `--`.
+- `PUTCH <ascii>` put `<ascii>` on screen
+- `OUTNUMB <nr>` put `<nr>` on screen as decimal number
 
 ### Error messages
 BASIC can return ***3*** errors:
-- `?Number too big error` - returned for example in `PUTARR` if character code is greater than 255.
+- `?Number error` - returned if number is beyond 16 bits
 - `?Syntax error` - basically every error.
-- `?Memory error` - returned if xx+VAR_OFFSET is bigger than 65535 (FFFF hex).
 ### Other stuff
 #### What IS NOT supported yet?
 - Separating statements by `:`.
